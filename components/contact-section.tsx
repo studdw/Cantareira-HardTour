@@ -7,7 +7,7 @@ const contacts = [
     icon: Phone,
     label: "WhatsApp",
     value: "(11) 97840-5755",
-    href: "https://wa.me/551197840-5755",
+    href: "https://api.whatsapp.com/message/S2MCOHMSIP74B1?autoload=1&app_absent=0&utm_source=ig",
     color: "bg-green-600 hover:bg-green-700",
   },
   {

@@ -12,6 +12,7 @@ const navLinks = [
   { href: "#galeria", label: "Galeria" },
   { href: "#sobre", label: "Sobre" },
   { href: "#contato", label: "Contato" },
+  { href: "/agendamento", label: "Agendar Passeio" },
 ]
 
 export function Header() {
@@ -48,7 +49,7 @@ export function Header() {
 
           <div className="flex items-center gap-4">
             <Button asChild className="hidden sm:flex">
-              <Link href="#agendar">Agendar Viagem</Link>
+              <Link href="/agendamento">Agendar Viagem</Link>
             </Button>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -75,7 +76,7 @@ export function Header() {
               </Link>
             ))}
             <Button asChild className="w-full mt-2">
-              <Link href="#agendar">Agendar Viagem</Link>
+              <Link href="/agendamento">Agendar Viagem</Link>
             </Button>
           </nav>
         </div>
