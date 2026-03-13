@@ -1,197 +1,167 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Users, Phone } from "lucide-react"
+// components/FormularioAgendamento.tsx
+// Instale o Resend: npm install resend
 
-export function BookingSection() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    date: "",
-    participants: "",
-    package: "",
-    message: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+import { useState } from 'react';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simular envio
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    
-    setIsSubmitting(false)
-    setSubmitted(true)
-    
-    // Reset após 5 segundos
-    setTimeout(() => {
-      setSubmitted(false)
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        date: "",
-        participants: "",
-        package: "",
-        message: "",
-      })
-    }, 5000)
+const PACOTES = [
+  'Aventura Solo',
+  'Casal Aventureiro',
+  'Grupo Pequeno (3–6)',
+  'Grupo Grande (7+)',
+  'Pacote Personalizado',
+];
+
+export default function FormularioAgendamento() {
+  const [form, setForm] = useState({
+    nomeCompleto: '',
+    email: '',
+    telefone: '',
+    dataPreferencial: '',
+    participantes: 1,
+    pacote: '',
+    mensagem: '',
+  });
+
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  if (submitted) {
-    return (
-      <section id="agendar" className="py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <Calendar className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold mb-4 text-balance">
-              Solicitação Enviada!
-            </h2>
-            <p className="text-muted-foreground text-lg text-pretty">
-              Recebemos sua solicitação de agendamento. Entraremos em contato em breve 
-              para confirmar sua aventura. Prepare-se para a adrenalina!
-            </p>
-          </div>
-        </div>
-      </section>
-    )
+  async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    setStatus('loading');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error || 'Erro ao enviar.');
+        setStatus('error');
+        return;
+      }
+
+      setStatus('success');
+      setForm({
+        nomeCompleto: '',
+        email: '',
+        telefone: '',
+        dataPreferencial: '',
+        participantes: 1,
+        pacote: '',
+        mensagem: '',
+      });
+    } catch {
+      setErrorMsg('Erro de conexão. Tente novamente.');
+      setStatus('error');
+    }
   }
 
   return (
-    <section id="agendar" className="py-24 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-primary font-[family-name:var(--font-display)] text-sm tracking-[0.2em] mb-2 uppercase">
-              Agendamento
-            </p>
-            <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-5xl font-bold mb-4 text-balance">
-              Reserve Sua Aventura
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Preencha o formulário abaixo e entraremos em contato para confirmar sua reserva.
-            </p>
+    <section style={{ background: '#111', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
+      <div style={{ width: '100%', maxWidth: 860 }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <p style={{ color: '#22c55e', fontFamily: 'monospace', letterSpacing: 4, fontSize: 13, marginBottom: 8 }}>AGENDAMENTO</p>
+          <h1 style={{ color: '#fff', fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, margin: '0 0 12px' }}>Reserve Sua Aventura</h1>
+          <p style={{ color: '#888', fontSize: 16 }}>Preencha o formulário abaixo e entraremos em contato para confirmar sua reserva.</p>
+        </div>
+
+        {/* Card */}
+        <div style={{ background: '#1a1a1a', borderRadius: 16, padding: 'clamp(24px, 4vw, 48px)', border: '1px solid #2a2a2a' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+
+            <Field label="Nome completo" required>
+              <input name="nomeCompleto" value={form.nomeCompleto} onChange={handleChange} placeholder="Seu nome" style={inputStyle} />
+            </Field>
+
+            <Field label="E-mail" required>
+              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="seu@email.com" style={inputStyle} />
+            </Field>
+
+            <Field label="Telefone / WhatsApp" required>
+              <input name="telefone" value={form.telefone} onChange={handleChange} placeholder="(11) 99999-9999" style={inputStyle} />
+            </Field>
+
+            <Field label="Data preferencial" required>
+              <input name="dataPreferencial" type="date" value={form.dataPreferencial} onChange={handleChange} style={inputStyle} />
+            </Field>
+
+            <Field label="Número de participantes" required>
+              <input name="participantes" type="number" min={1} value={form.participantes} onChange={handleChange} style={inputStyle} />
+            </Field>
+
+            <Field label="Pacote desejado" required>
+              <select name="pacote" value={form.pacote} onChange={handleChange} style={inputStyle}>
+                <option value="">Selecione um pacote</option>
+                {PACOTES.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </Field>
+
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-card rounded-2xl p-8 border border-border">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
-                <Input
-                  id="name"
-                  placeholder="Seu nome"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telefone / WhatsApp</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="phone"
-                    placeholder="(11) 99999-9999"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date">Data preferencial</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="participants">Número de participantes</Label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="participants"
-                    type="number"
-                    min="1"
-                    max="20"
-                    placeholder="1"
-                    value={formData.participants}
-                    onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="package">Pacote desejado</Label>
-                <Select
-                  value={formData.package}
-                  onValueChange={(value) => setFormData({ ...formData, package: value })}
-                >
-                  <SelectTrigger id="package">
-                    <SelectValue placeholder="Selecione um pacote" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="iniciante">Iniciante - R$ 250</SelectItem>
-                    <SelectItem value="aventureiro">Aventureiro - R$ 450</SelectItem>
-                    <SelectItem value="extremo">Extremo - R$ 750</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="message">Mensagem (opcional)</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Alguma observação ou pergunta?"
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  rows={4}
-                />
-              </div>
+          <div style={{ marginTop: 24 }}>
+            <Field label="Mensagem (opcional)">
+              <textarea name="mensagem" value={form.mensagem} onChange={handleChange} placeholder="Alguma observação ou pergunta?" rows={4}
+                style={{ ...inputStyle, resize: 'vertical', width: '100%', boxSizing: 'border-box' }} />
+            </Field>
+          </div>
+
+          {/* Feedback */}
+          {status === 'success' && (
+            <div style={{ marginTop: 20, padding: '14px 20px', background: '#052e16', border: '1px solid #166534', borderRadius: 10, color: '#4ade80' }}>
+              ✅ Solicitação enviada com sucesso! Entraremos em contato em breve.
             </div>
-            <div className="mt-8">
-              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
-              </Button>
+          )}
+          {status === 'error' && (
+            <div style={{ marginTop: 20, padding: '14px 20px', background: '#1f0000', border: '1px solid #7f1d1d', borderRadius: 10, color: '#f87171' }}>
+              ❌ {errorMsg}
             </div>
-          </form>
+          )}
+
+          {/* Botão */}
+          <button onClick={handleSubmit} disabled={status === 'loading'}
+            style={{ marginTop: 28, width: '100%', padding: '16px', background: status === 'loading' ? '#15803d' : '#22c55e',
+              color: '#000', fontWeight: 800, fontSize: 16, border: 'none', borderRadius: 10, cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+              transition: 'background 0.2s' }}>
+            {status === 'loading' ? 'Enviando...' : 'Enviar Solicitação'}
+          </button>
         </div>
       </div>
     </section>
-  )
+  );
 }
+
+// Componente auxiliar de campo
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={{ display: 'block', color: '#ccc', fontSize: 14, marginBottom: 8, fontWeight: 600 }}>
+        {label} {required && <span style={{ color: '#22c55e' }}>*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  background: '#111',
+  border: '1px solid #333',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 15,
+  outline: 'none',
+  boxSizing: 'border-box',
+};
