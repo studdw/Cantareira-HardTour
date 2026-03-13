@@ -6,11 +6,9 @@
 import { useState } from 'react';
 
 const PACOTES = [
-  'Aventura Solo',
-  'Casal Aventureiro',
-  'Grupo Pequeno (3–6)',
-  'Grupo Grande (7+)',
-  'Pacote Personalizado',
+  'Iniciante',
+  'Intermediario',
+  'Hard',
 ];
 
 export default function FormularioAgendamento() {
@@ -67,8 +65,8 @@ export default function FormularioAgendamento() {
     }
   }
 
-  return (
-    <section style={{ background: '#111', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
+return (
+    <section id="agendar" style={{ background: '#111', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
       <div style={{ width: '100%', maxWidth: 860 }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
